@@ -1,4 +1,5 @@
 import 'dart:core';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mini_red/mini_red.dart';
@@ -16,6 +17,7 @@ class _RedditPostsState extends State<RedditPosts> {
   String after;
   String kind;
   String subReddit = 'hot/';
+  String pageTitle = 'Mini Red';
   int count = 0;
 
   void _refreshList() {
@@ -77,9 +79,12 @@ class _RedditPostsState extends State<RedditPosts> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      appBar: new AppBar(title: new Text('Mini Red'), actions: <Widget>[
-        new IconButton(icon: new Icon(Icons.refresh), onPressed: _refreshList)
-      ],),
+        appBar: new AppBar(
+          title: new Text(pageTitle),
+          actions: <Widget>[
+            new IconButton(
+                icon: new Icon(Icons.refresh), onPressed: _refreshList)
+          ],),
       body: new _PostList(
         postChildren: postChildren,
         getNewPosts: _getNewPosts,
@@ -92,24 +97,60 @@ class _RedditPostsState extends State<RedditPosts> {
                 leading: new Icon(Icons.home),
                 title: new Text('Front Page'),
                 onTap: () {
-                  // change app state...
                   setState(() {
                     subReddit = 'hot/';
+                    pageTitle = 'Mini Red';
                   });
                   _refreshList();
-                  Navigator.pop(context); // close the drawer
+                  Navigator.pop(context);
                 },
               ),
               new ListTile(
                 leading: new Icon(Icons.turned_in),
                 title: new Text('Games'),
                 onTap: () {
-                  // change app state...
                   setState(() {
                     subReddit = 'r/games/';
+                    pageTitle = 'r/games/';
                   });
                   _refreshList();
-                  Navigator.pop(context); // close the drawer
+                  Navigator.pop(context);
+                },
+              ),
+              new ListTile(
+                leading: new Icon(Icons.edit),
+                title: new Text('Custom Subreddit'),
+                onTap: () {
+                  Future<Null> _askedToLead() async {
+                    await showDialog(
+                      context: context,
+                      child: new SimpleDialog(
+                        title: const Text('Custom Subreddit'),
+                        children: <Widget>[
+                          new Container(
+                            padding: new EdgeInsets.all(16.0),
+                            child: new Column(
+                              children: <Widget>[
+                                new TextField(
+                                  onSubmitted: (String val) {
+                                    setState(() {
+                                      subReddit = 'r/$val/';
+                                      pageTitle = 'r/$val/';
+                                    });
+                                    _refreshList();
+                                    Navigator.pop(context);
+                                  },
+                                )
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  _askedToLead();
+                  Navigator.pop(context);
                 },
               ),
             ],
