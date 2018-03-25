@@ -135,12 +135,14 @@ class _PostList extends StatelessWidget {
   Widget build(BuildContext context) {
     return new ListView.builder(
       itemCount: postChildren.length,
-      itemBuilder: (BuildContext context, int index) {
-        if (index == count - 10) {
+      itemBuilder: (BuildContext context, int i) {
+        if (i.isOdd) return new Divider();
+        final index = i ~/ 2;
+        if (index == (count ~/ 2) - 10) {
           getNewPosts(count);
         }
 
-        if (index < postChildren.length) {
+        if (index < postChildren.length ~/ 2) {
           Map postData = postChildren[index]['data'];
 
           return _buildPostTile(postData, context);
