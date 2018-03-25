@@ -1,4 +1,5 @@
 import 'dart:core';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -23,21 +24,15 @@ class _RedditCommentsState extends State<RedditComments> {
   bool loading = true;
   List<Widget> commentTiles = [];
 
-  void _pareResults(List results) {
-    commentTiles.clear();
-    Map comments = results[1];
-    List commentsChildren = comments['data']['children'];
-    String commentBody;
-    MarkdownBody md;
-
-    int len = commentsChildren.length -1;
-
-
+  Future _buildCommentList(List commentsChildren) async {
+    int len = commentsChildren.length - 1;
     for (int i = 0; i < len; i++) {
       Map commentData = commentsChildren[i]['data'];
       String author = commentData['author'];
       String spacer = ' ';
       String score = commentData['score'].toString() + spacer;
+      int depth = commentData['depth'];
+      double depthPadding = depth * 16.0;
 
       var _launchURLWrapper = (String url) {
         String title = widget.title;
@@ -45,19 +40,34 @@ class _RedditCommentsState extends State<RedditComments> {
         launchURL(url: url, title: title, context: ctx);
       };
 
-      commentBody = commentData['body'];
-      md = new MarkdownBody(
-        data: '$commentBody',
-        onTapLink: _launchURLWrapper
+      String commentBody = commentData['body'];
+      MarkdownBody md = new MarkdownBody(
+          data: '$commentBody',
+          onTapLink: _launchURLWrapper
       );
       commentTiles.add(
-        _commentListTile(
-          body: md,
-          author: author,
-          score: score
-        )
+          _commentListTile(
+              body: md,
+              author: author,
+              score: score,
+              depthPadding: depthPadding
+          )
       );
+
+      if (commentData['replies'] != '') {
+        List replies = commentData['replies']['data']['children'];
+        await _buildCommentList(replies);
+      }
     }
+  }
+
+  void _pareResults(List results) async {
+    commentTiles.clear();
+    Map comments = results[1];
+    List commentsChildren = comments['data']['children'];
+
+    await _buildCommentList(commentsChildren);
+
     setState(() {
       loading = false;
     });
@@ -115,12 +125,17 @@ class _CommentList extends StatelessWidget {
   }
 }
 
-Widget _commentListTile({MarkdownBody body, String author, String score}) {
+Widget _commentListTile({
+  MarkdownBody body,
+  String author,
+  String score,
+  double depthPadding: 0.0
+}) {
   String spacer = ' ';
 
-  return new ListTile(
-    title: body,
-    subtitle: new RichText(
+  Widget tile = new ListTile(
+    subtitle: body,
+    title: new RichText(
       text: new TextSpan(
         text: author + spacer,
         style: new TextStyle(
@@ -128,10 +143,38 @@ Widget _commentListTile({MarkdownBody body, String author, String score}) {
         ),
         children: <TextSpan>[
           new TextSpan(
-              text: score,
+              text: score + 'pts ',
               style: new TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     ),
   );
+
+  Container container = new Container(
+    padding: const EdgeInsets.only(
+        top: 16.0,
+        bottom: 8.0
+    ),
+    decoration: new BoxDecoration(
+        border: new Border(
+            left: (depthPadding == 0.0)
+                ? BorderSide.none
+                : new BorderSide(
+                width: depthPadding,
+                color: Colors.black26
+            ),
+            bottom: new BorderSide(
+                width: 1.0,
+                color: Colors.black12
+            )
+        )
+    ),
+    child: new Align(
+      alignment: Alignment.topLeft,
+      heightFactor: 1.2,
+      child: tile,
+    ),
+  );
+
+  return container;
 }
