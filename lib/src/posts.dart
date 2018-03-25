@@ -85,6 +85,36 @@ class _RedditPostsState extends State<RedditPosts> {
         getNewPosts: _getNewPosts,
         count: count
       ),
+        drawer: new Drawer(
+          child: new ListView(
+            children: <Widget>[
+              new ListTile(
+                leading: new Icon(Icons.home),
+                title: new Text('Front Page'),
+                onTap: () {
+                  // change app state...
+                  setState(() {
+                    subReddit = 'hot/';
+                  });
+                  _refreshList();
+                  Navigator.pop(context); // close the drawer
+                },
+              ),
+              new ListTile(
+                leading: new Icon(Icons.turned_in),
+                title: new Text('Games'),
+                onTap: () {
+                  // change app state...
+                  setState(() {
+                    subReddit = 'r/games/';
+                  });
+                  _refreshList();
+                  Navigator.pop(context); // close the drawer
+                },
+              ),
+            ],
+          ),
+        )
     );
   }
 }
