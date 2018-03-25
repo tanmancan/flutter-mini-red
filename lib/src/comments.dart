@@ -115,7 +115,7 @@ class _CommentList extends StatelessWidget {
       ? new ListView(
         children: [
           new ListTile(
-            title: new Text('Loading')
+              title: new Text('Loading...')
           )
         ],
       )
