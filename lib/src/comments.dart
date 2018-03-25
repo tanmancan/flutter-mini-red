@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:mini_red/mini_red_api.dart';
+import 'package:mini_red/webview.dart';
 
 class RedditComments extends StatefulWidget {
   RedditComments({
@@ -30,14 +31,25 @@ class _RedditCommentsState extends State<RedditComments> {
     MarkdownBody md;
 
     int len = commentsChildren.length -1;
+
+
     for (int i = 0; i < len; i++) {
       Map commentData = commentsChildren[i]['data'];
       String author = commentData['author'];
       String spacer = ' ';
       String score = commentData['score'].toString() + spacer;
 
+      var _launchURLWrapper = (String url) {
+        String title = widget.title;
+        BuildContext ctx = context;
+        launchURL(url: url, title: title, context: ctx);
+      };
+
       commentBody = commentData['body'];
-      md = new MarkdownBody(data: '$commentBody');
+      md = new MarkdownBody(
+        data: '$commentBody',
+        onTapLink: _launchURLWrapper
+      );
       commentTiles.add(
         _commentListTile(
           body: md,

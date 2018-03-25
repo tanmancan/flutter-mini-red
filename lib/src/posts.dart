@@ -1,9 +1,9 @@
 import 'dart:core';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:mini_red/mini_red_api.dart';
 import 'package:mini_red/mini_red.dart';
+import 'package:mini_red/mini_red_api.dart';
+import 'package:mini_red/webview.dart';
 
 class RedditPosts extends StatefulWidget {
   @override
@@ -165,7 +165,11 @@ Widget _buildPostTile(Map postData, BuildContext context) {
       ]
     )),
     onLongPress: () {
-      _launchURL(postData['url']);
+      launchURL(
+        url: postData['url'],
+        title: postData['title'],
+        context: context
+      );
     },
     onTap: () {
       _gotoComments(postData['permalink'], postData['title'], context);
@@ -199,16 +203,6 @@ Widget _getThumbnail(thumbNail) {
       scale: 1.0,
       repeat: ImageRepeat.noRepeat
   );
-}
-
-void _launchURL(String url) async {
-  if (await canLaunch(url)) {
-    await launch(url,
-        forceWebView: true
-    );
-  } else {
-    throw 'Could not launch $url';
-  }
 }
 
 void _gotoComments(String permalink, String title, BuildContext context) {
