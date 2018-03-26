@@ -19,6 +19,8 @@ class _RedditPostsState extends State<RedditPosts> {
   String subReddit = 'hot/';
   String pageTitle = 'Mini Red';
   int count = 0;
+  List<Widget> drawerItems = [];
+  Set drawerItemsSet = new Set();
 
   void _refreshList() {
     setState(() {
@@ -78,84 +80,76 @@ class _RedditPostsState extends State<RedditPosts> {
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-        appBar: new AppBar(
-          title: new Text(pageTitle),
-          actions: <Widget>[
-            new IconButton(
-                icon: new Icon(Icons.refresh), onPressed: _refreshList)
-          ],),
-      body: new _PostList(
-        postChildren: postChildren,
-        getNewPosts: _getNewPosts,
-        count: count
-      ),
-        drawer: new Drawer(
-          child: new ListView(
-            children: <Widget>[
-              new ListTile(
-                leading: new Icon(Icons.home),
-                title: new Text('Front Page'),
-                onTap: () {
-                  setState(() {
-                    subReddit = 'hot/';
-                    pageTitle = 'Mini Red';
-                  });
-                  _refreshList();
-                  Navigator.pop(context);
-                },
-              ),
-              new ListTile(
-                leading: new Icon(Icons.turned_in),
-                title: new Text('Games'),
-                onTap: () {
-                  setState(() {
-                    subReddit = 'r/games/';
-                    pageTitle = 'r/games/';
-                  });
-                  _refreshList();
-                  Navigator.pop(context);
-                },
-              ),
-              new ListTile(
-                leading: new Icon(Icons.edit),
-                title: new Text('Custom Subreddit'),
-                onTap: () {
-                  Future<Null> _askedToLead() async {
-                    await showDialog(
-                      context: context,
-                      child: new SimpleDialog(
-                        title: const Text('Custom Subreddit'),
-                        children: <Widget>[
-                          new Container(
-                            padding: new EdgeInsets.all(16.0),
-                            child: new Column(
-                              children: <Widget>[
-                                new TextField(
-                                  onSubmitted: (String val) {
-                                    setState(() {
-                                      subReddit = 'r/$val/';
-                                      pageTitle = 'r/$val/';
-                                    });
-                                    _refreshList();
-                                    Navigator.pop(context);
-                                  },
-                                )
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
+    final Widget home = buildMenuItem(
+        onTap: () {
+          setState(() {
+            subReddit = 'hot/';
+            pageTitle = 'Mini Red';
+          });
+          _refreshList();
+          Navigator.pop(context);
+        },
+        menuIcon: Icons.home,
+        menuTitle: 'Front Page'
+    );
 
-                  _askedToLead();
-                  Navigator.pop(context);
-                },
+    final Widget custom = buildMenuItem(
+        menuTitle: 'Custom Subreddit',
+        menuIcon: Icons.edit,
+        onTap: () {
+          Future<Null> _askedToLead() async {
+            await showDialog(
+              context: context,
+              child: new SimpleDialog(
+                title: const Text('Custom Subreddit'),
+                children: <Widget>[
+                  new Container(
+                    padding: new EdgeInsets.all(16.0),
+                    child: new Column(
+                      children: <Widget>[
+                        new TextField(
+                          autofocus: true,
+                          autocorrect: false,
+                          onSubmitted: (String val) {
+                            setState(() {
+                              subReddit = 'r/$val/';
+                              pageTitle = 'r/$val/';
+                            });
+                            _refreshList();
+                            Navigator.pop(context);
+                          },
+                        )
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        )
+            );
+          }
+
+          _askedToLead();
+          Navigator.pop(context);
+        }
+    );
+
+    var addItem = addMenuItem(drawerItems, drawerItemsSet);
+
+    addItem(home, 'home');
+    addItem(custom, 'custom');
+
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text(pageTitle),
+        actions: <Widget>[
+          new IconButton(
+              icon: new Icon(Icons.refresh), onPressed: _refreshList)
+        ],),
+      body: new _PostList(
+          postChildren: postChildren,
+          getNewPosts: _getNewPosts,
+          count: count
+      ),
+      drawer: buildMenu(drawerItems: drawerItems),
     );
   }
 }
@@ -197,16 +191,17 @@ Widget _buildPostTile(Map postData, BuildContext context) {
   String subReddit = postData['subreddit_name_prefixed'];
   String author = postData['author'];
   String thumbNail = postData['thumbnail'];
-  String spacer = ' ';
+  String comments = postData['num_comments'].toString() + ' comments';
+  String spacer = ' • ';
   String spoiler;
   String nsfw;
   String score = postData['score'].toString() + 'pts' + spacer;
 
-  if (postData['spoiler']) {
+  if (postData['spoiler'] != false) {
     spoiler = 'Spoilers' + spacer;
   }
 
-  if (postData['over_18']) {
+  if (postData['over_18'] != false) {
     nsfw = 'NSFW' + spacer;
   }
 
@@ -217,16 +212,20 @@ Widget _buildPostTile(Map postData, BuildContext context) {
       overflow: TextOverflow.ellipsis,
     ),
     subtitle: new RichText(text: new TextSpan(
-      text: author + spacer,
+        text: comments + spacer,
       style: new TextStyle(
-        color: Colors.grey
+        color: Colors.grey,
+        fontWeight: FontWeight.bold,
       ),
       children: <TextSpan>[
+        new TextSpan(
+            text: author + spacer,
+            style: new TextStyle(fontWeight: FontWeight.bold)),
         new TextSpan(
             text: score,
             style: new TextStyle(fontWeight: FontWeight.bold)),
         new TextSpan(
-            text: subReddit + spacer,
+            text: subReddit + ' ',
             style: new TextStyle(fontWeight: FontWeight.bold)),
         new TextSpan(
             text: spoiler,
