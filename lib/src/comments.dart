@@ -120,7 +120,13 @@ class _CommentList extends StatelessWidget {
         ],
       )
       : new ListView(
-        children: commentTiles,
+        children: commentTiles.length > 0
+            ? commentTiles
+            : [
+          new ListTile(
+            title: new Text('No comments.'),
+          ),
+        ]
       );
   }
 }
