@@ -16,12 +16,14 @@ class RedditComments extends StatefulWidget {
   final String permalink;
   final String title;
 
+
   @override
   _RedditCommentsState createState() => new _RedditCommentsState();
 }
 
 class _RedditCommentsState extends State<RedditComments> {
   bool loading = true;
+  String subredditTitle = '';
   List<Widget> commentTiles = [];
 
   Future _buildCommentList(List commentsChildren) async {
@@ -61,11 +63,65 @@ class _RedditCommentsState extends State<RedditComments> {
     }
   }
 
+  void _postInfoHeader(Map post) {
+    Map postInfo = post['data']['children'][0]['data'];
+    String title = postInfo['title'];
+    String selfText = postInfo['selftext'];
+    String author = postInfo['author'];
+    String score = postInfo['score'].toString();
+
+    setState(() {
+      subredditTitle = postInfo['subreddit_name_prefixed'];
+    });
+
+    Widget headerTitle = new Container(
+      padding: new EdgeInsets.fromLTRB(16.0, 32.0, 16.0, 0.0),
+      alignment: Alignment.topLeft,
+      child: new Text(
+        title,
+        style: new TextStyle(
+          fontSize: 18.0,
+          color: Colors.black,
+        ),
+      ),
+    );
+
+    Widget headerSelfText = _commentListTile(
+        body: new Text(
+          selfText,
+          style: new TextStyle(
+            color: Colors.black
+          ),
+        ),
+        author: author,
+        score: score,
+        depthPadding: 0.0
+    );
+
+    Widget headerColumn = new Column(
+      children: <Widget>[
+        headerTitle,
+        headerSelfText
+      ],
+    );
+
+    Widget headerContainer = new Container(
+      decoration: new BoxDecoration(
+        color: Colors.grey[200]
+      ),
+      child: headerColumn,
+    );
+
+    commentTiles.add(headerContainer);
+  }
+
   void _pareResults(List results) async {
     commentTiles.clear();
+    Map post = results[0];
     Map comments = results[1];
     List commentsChildren = comments['data']['children'];
 
+    _postInfoHeader(post);
     await _buildCommentList(commentsChildren);
 
     setState(() {
@@ -86,7 +142,11 @@ class _RedditCommentsState extends State<RedditComments> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      appBar: new AppBar(title: new Text(widget.title)),
+      appBar: new AppBar(
+          title: loading
+            ? new Text('Loading...')
+            : new Text(widget.title)
+      ),
       body: new _CommentList(
         loading: loading,
         permalink: widget.permalink,
@@ -110,7 +170,6 @@ class _CommentList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return loading
       ? new ListView(
         children: [
@@ -132,7 +191,7 @@ class _CommentList extends StatelessWidget {
 }
 
 Widget _commentListTile({
-  MarkdownBody body,
+  Widget body,
   String author,
   String score,
   double depthPadding: 0.0
