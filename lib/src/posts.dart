@@ -97,37 +97,39 @@ class _RedditPostsState extends State<RedditPosts> {
         menuTitle: 'Custom Subreddit',
         menuIcon: Icons.edit,
         onTap: () {
-          Future<Null> _askedToLead() async {
+          Future<Null> _customSubreddit() async {
             await showDialog(
-              context: context,
-              child: new SimpleDialog(
-                title: const Text('Custom Subreddit'),
-                children: <Widget>[
-                  new Container(
-                    padding: new EdgeInsets.all(16.0),
-                    child: new Column(
-                      children: <Widget>[
-                        new TextField(
-                          autofocus: true,
-                          autocorrect: false,
-                          onSubmitted: (String val) {
-                            setState(() {
-                              subReddit = 'r/$val/';
-                              pageTitle = 'r/$val/';
-                            });
-                            _refreshList();
-                            Navigator.pop(context);
-                          },
-                        )
-                      ],
+              builder: (BuildContext context) {
+                return new SimpleDialog(
+                  title: const Text('Custom Subreddit'),
+                  children: <Widget>[
+                    new Container(
+                      padding: new EdgeInsets.all(16.0),
+                      child: new Column(
+                        children: <Widget>[
+                          new TextField(
+                            autofocus: true,
+                            autocorrect: false,
+                            onSubmitted: (String val) {
+                              setState(() {
+                                subReddit = 'r/$val/';
+                                pageTitle = 'r/$val/';
+                              });
+                              _refreshList();
+                              Navigator.pop(context);
+                            },
+                          )
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                );
+              },
+              context: context,
             );
           }
 
-          _askedToLead();
+          _customSubreddit();
           Navigator.pop(context);
         }
     );
@@ -208,8 +210,7 @@ Widget _buildPostTile(Map postData, BuildContext context) {
   return new ListTile(
     leading: _getThumbnail(thumbNail),
     title: new Text(
-      postData['title'],
-      overflow: TextOverflow.ellipsis,
+      postData['title']
     ),
     subtitle: new RichText(text: new TextSpan(
         text: comments + spacer,
