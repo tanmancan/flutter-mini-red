@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mini_red/mini_red.dart';
 import 'package:mini_red/mini_red_api.dart';
-import 'package:mini_red/webview.dart';
 
 class RedditPosts extends StatefulWidget {
   @override
@@ -198,6 +197,7 @@ Widget _buildPostTile(Map postData, BuildContext context) {
   String spoiler;
   String nsfw;
   String score = postData['score'].toString() + 'pts' + spacer;
+  String domain = postData['domain'];
 
   if (postData['spoiler'] != false) {
     spoiler = 'Spoilers' + spacer;
@@ -226,7 +226,10 @@ Widget _buildPostTile(Map postData, BuildContext context) {
             text: score,
             style: new TextStyle(fontWeight: FontWeight.bold)),
         new TextSpan(
-            text: subReddit + ' ',
+            text: subReddit + spacer,
+            style: new TextStyle(fontWeight: FontWeight.bold)),
+        new TextSpan(
+            text: domain + ' ',
             style: new TextStyle(fontWeight: FontWeight.bold)),
         new TextSpan(
             text: spoiler,
@@ -238,11 +241,7 @@ Widget _buildPostTile(Map postData, BuildContext context) {
       ]
     )),
     onLongPress: () {
-      launchURL(
-        url: postData['url'],
-        title: postData['title'],
-        context: context
-      );
+      _gotoContent(postData, context);
     },
     onTap: () {
       _gotoComments(postData['permalink'], postData['title'], context);
@@ -278,11 +277,20 @@ Widget _getThumbnail(thumbNail) {
   );
 }
 
+void _gotoContent(Map postData, BuildContext context) {
+  Navigator.of(context).push(
+    new MaterialPageRoute(builder: (context) => new PostContent(
+        postData: postData,
+        context: context
+    )),
+  );
+}
+
 void _gotoComments(String permalink, String title, BuildContext context) {
   Navigator.of(context).push(
     new MaterialPageRoute(builder: (context) => new RedditComments(
       permalink: permalink,
-      title: title,
+      title: title
     )),
   );
 }
