@@ -9,17 +9,17 @@ Future<Map> fetchPosts({
   String subReddit,
   String after
 }) async {
-  final String uri = '$domain/$subReddit.json?count=$count&after=$after';
+  final String uri = '$domain/$subReddit.json?raw_json=1&count=$count&after=$after';
   final response = await http.get(uri);
-  final json = JSON.decode(response.body);
+  final post = json.decode(response.body);
 
-  return json;
+  return post;
 }
 
 Future<List> fetchComments(String permalink) async {
   final String uri = '$domain/$permalink/.json';
   final response = await http.get(uri);
-  final json = JSON.decode(response.body);
+  final post = json.decode(response.body);
 
-  return json;
+  return post;
 }
