@@ -69,6 +69,7 @@ class _RedditCommentsState extends State<RedditComments> {
     String selfText = postInfo['selftext'];
     String author = postInfo['author'];
     String score = postInfo['score'].toString();
+    String subReddit = postInfo['subreddit_name_prefixed'];
 
     setState(() {
       subredditTitle = postInfo['subreddit_name_prefixed'];
@@ -93,7 +94,7 @@ class _RedditCommentsState extends State<RedditComments> {
             color: Colors.black
           ),
         ),
-        author: author,
+        author: author + ' ' + subReddit,
         score: score,
         depthPadding: 0.0
     );
