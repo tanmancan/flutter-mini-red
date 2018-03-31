@@ -30,10 +30,12 @@ class PostContent extends StatefulWidget {
 class PostContentState extends State<PostContent> {
   VideoPlayerController _controller;
   bool _isPlaying = false;
+  Widget contentBody;
 
   @override
   void initState() {
     super.initState();
+    contentBody = new Text('Loading');
     _controller = new VideoPlayerController(
       'http://www.sample-videos.com/video/mp4/720/big_buck_bunny_720p_20mb.mp4',
     )
@@ -52,9 +54,9 @@ class PostContentState extends State<PostContent> {
   Widget build(BuildContext context) {
     Map postData = widget.postData;
     PostType type = _getPostType(postData);
-    Widget contentBody;
     print(postData['domain']);
     print(type);
+    // @TODO: do this better
     switch (type) {
       case PostType.IMAGE:
         Map source = postData['preview']['images'][0]['source'];
@@ -93,6 +95,7 @@ class PostContentState extends State<PostContent> {
             title: new Text(postData['title']),
           ),
         );
+        break;
       case PostType.SELF:
         return new RedditComments(
             permalink: postData['permalink'],
